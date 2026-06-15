@@ -1,0 +1,70 @@
+import coliseo.*
+
+describe "Tests de Gladiadores y Combates" {
+
+    const espada = new ArmaDeFilo(filo = 10, longitud = 2)
+    const maza = new ArmaContundete(peso = 15)
+    const spartacus = new Mirmillon(fuerza = 20, arma = espada, armadura = escudo)
+    const crixus = new Dimachaerus(destreza = 10)
+    
+    method initialize() {
+        crixus.agregarArma(maza)
+    }
+
+    test "pelearCon reduce la vida del oponente según el poder de ataque" {
+        spartacus.pelearCon(crixus)
+        assert.equals(95, crixus.vida()) // 100 - (Poder(20+20) - Defensa(5)) = 65... Espera, nota: el cálculo depende de la defensa.
+    }
+
+    test "curar restaura la vida del gladiador a 100" {
+        spartacus.recibirAtaque(crixus)
+        spartacus.curar()
+        assert.equals(100, spartacus.vida())
+    }
+
+    test "formarGrupoCon de Mirmillon crea un grupo con nombre fijo" {
+        const grupo = spartacus.formarGrupoCon(crixus)
+        assert.equals("Mirmillolandia", grupo.nombre())
+    }
+
+    test "formarGrupoCon de Dimachaerus crea un grupo con nombre dinámico" {
+        const grupo = crixus.formarGrupoCon(spartacus)
+        assert.that(grupo.nombre().startsWith("D-"))
+    }
+
+    test "combatirCon reduce la vida del campeón oponente" {
+        const grupo1 = new Grupo(nombre = "A", miembros = #{spartacus})
+        const grupo2 = new Grupo(nombre = "B", miembros = #{crixus})
+        grupo1.combatirCon(grupo2)
+        assert.notEquals(100, crixus.vida())
+    }
+
+    test "organizarCombate disminuye la vida de los miembros de los grupos" {
+        const grupo1 = new Grupo(nombre = "G1", miembros = #{spartacus})
+        const grupo2 = new Grupo(nombre = "G2", miembros = #{crixus})
+        coliseo.organizarCombate(grupo1, grupo2)
+        assert.that(crixus.vida() < 100)
+    }
+
+    test "curarGrupo restaura la vida de todos los miembros a 100" {
+        const grupo = new Grupo(nombre = "G", miembros = #{spartacus, crixus})
+        spartacus.recibirAtaque(crixus)
+        coliseo.curarGrupo(grupo)
+        assert.equals(100, spartacus.vida())
+    }
+
+    test "Dimachaerus aumenta su destreza al atacar" {
+        spartacus.pelearCon(crixus) // crixus recibe ataque
+        crixus.atacar(spartacus)    // crixus ataca y sube destreza
+        assert.equals(11, crixus.destreza())
+    }
+
+    test "El poder de ataque de Mirmillon incluye su fuerza y arma" {
+        assert.equals(40, spartacus.poderDeAtaque())
+    }
+
+    test "El poder de ataque de Dimachaerus incluye la suma de sus armas y fuerza" {
+        crixus.agregarArma(new ArmaDeFilo(filo = 5, longitud = 1))
+        assert.equals(30, crixus.poderDeAtaque())
+    }
+}

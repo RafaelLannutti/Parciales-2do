@@ -1,0 +1,175 @@
+import plantas.*
+
+describe "Tests de Plantas y sus Variedades - Menta" {
+  test "Una Menta de 1 metro ocupa 3 metros cuadrados" {
+    const mentaGrande = new Menta(anioDeObtension = 2020, altura = 1)
+    assert.equals(3, mentaGrande.espacioQueOcupa())
+  }
+  
+  test "Una Menta de 0.3 metros no da nuevas semillas" {
+    const mentaChica = new Menta(anioDeObtension = 2020, altura = 0.3)
+    assert.notThat(mentaChica.daNuevasSemillas())
+  }
+}
+
+describe "Tests de Plantas y sus Variedades - Hierbabuena" {
+  test "Hierbabuena de 1 metro ocupa el doble de espacio que una menta comun (6 metros cuadrados)" {
+    const hierbabuena = new HierbaBuena(anioDeObtension = 2020, altura = 1)
+    assert.equals(6, hierbabuena.espacioQueOcupa())
+  }
+}
+
+describe "Tests de Plantas y sus Variedades - Soja" {
+  test "Soja de 0.6 metros tolera exactamente 7 horas de sol" {
+    const sojaMediana = new Soja(anioDeObtension = 2009, altura = 0.6)
+    assert.equals(7, sojaMediana.horasDeSolQueTolera())
+  }
+  
+  test "Soja de mas de 1 metro y semilla posterior al 2007 da nuevas semillas" {
+    const sojaGrandeReciente = new Soja(anioDeObtension = 2008, altura = 1.2)
+    assert.that(sojaGrandeReciente.daNuevasSemillas())
+  }
+}
+
+describe "Tests de Plantas y sus Variedades - Soja Transgenica" {
+  test "Soja Transgenica nunca da semillas, incluso si mide mas de 1 metro y es reciente" {
+    const sojaTrans = new SojaTransgenica(anioDeObtension = 2015, altura = 1.2)
+    assert.notThat(sojaTrans.daNuevasSemillas())
+  }
+}
+
+describe "Tests de Plantas y sus Variedades - Quinoa" {
+  test "Quinoa con semillas del 2001 da nuevas semillas por su condicion alternativa" {
+    const quinoaAntigua = new Quinoa(
+      horasDeSolQueTolera = 9,
+      anioDeObtension = 2001,
+      altura = 1
+    )
+    assert.that(quinoaAntigua.daNuevasSemillas())
+  }
+  
+  test "Quinoa con semillas del 2010 y 12 horas de sol da nuevas semillas por ser fuerte" {
+    const quinoaFuerte = new Quinoa(
+      horasDeSolQueTolera = 12,
+      anioDeObtension = 2010,
+      altura = 1
+    )
+    assert.that(quinoaFuerte.daNuevasSemillas())
+  }
+}
+
+describe "Tests de Parcelas" {
+  test "Superficie de una parcela de 20x1 es 20 metros cuadrados" {
+    const parcela = new Ecologica(ancho = 20, largo = 1, horasDeSolAlDia = 8)
+    assert.equals(20, parcela.superficie())
+  }
+  
+  test "Cantidad maxima de plantas que tolera si el ancho es mayor que el largo es superficie/5" {
+    const parcelaAncha = new Ecologica(
+      ancho = 20,
+      largo = 1,
+      horasDeSolAlDia = 8
+    )
+    assert.equals(4, parcelaAncha.cantidadDePlantasQueTolera())
+  }
+  
+  test "Parcela tiene complicaciones si alguna de sus plantas tolera menos sol que el que recibe la parcela" {
+    const parcela = new Ecologica(ancho = 10, largo = 5, horasDeSolAlDia = 8)
+    const soja = new Soja(anioDeObtension = 2009, altura = 0.6)
+    parcela.plantarUnaPlanta(soja)
+    assert.that(parcela.tieneComplicaciones())
+  }
+  
+  test "Se puede plantar una planta si hay espacio y la tolerancia al sol es adecuada" {
+    const parcela = new Ecologica(ancho = 10, largo = 5, horasDeSolAlDia = 6)
+    const menta = new Menta(anioDeObtension = 2020, altura = 1)
+    parcela.plantarUnaPlanta(menta)
+    assert.equals(1, parcela.plantas().size())
+  }
+}
+
+describe "Tests de Parcelas Ideales" {
+  test "A la Menta le resulta ideal una parcela con superficie mayor a 6" {
+    const menta = new Menta(anioDeObtension = 2020, altura = 1)
+    const parcelaGrande = new Ecologica(
+      ancho = 4,
+      largo = 2,
+      horasDeSolAlDia = 6
+    )
+    assert.that(menta.leResultaIdeal(parcelaGrande))
+  }
+  
+  test "A la Quinoa le resulta ideal una parcela sin plantas de mas de 1.5 metros" {
+    const quinoa = new Quinoa(
+      horasDeSolQueTolera = 9,
+      anioDeObtension = 2001,
+      altura = 1
+    )
+    const parcelaBaja = new Ecologica(ancho = 4, largo = 2, horasDeSolAlDia = 6)
+    parcelaBaja.plantarUnaPlanta(
+      new Menta(anioDeObtension = 2020, altura = 1.2)
+    )
+    assert.that(quinoa.leResultaIdeal(parcelaBaja))
+  }
+  
+  test "A la Soja comun le resulta ideal una parcela con sol igual al que tolera" {
+    const soja = new Soja(anioDeObtension = 2009, altura = 0.6)
+    const parcelaSolExacto = new Ecologica(
+      ancho = 4,
+      largo = 2,
+      horasDeSolAlDia = 7
+    )
+    assert.that(soja.leResultaIdeal(parcelaSolExacto))
+  }
+  
+  test "A la Soja Transgenica le resulta ideal una parcela con cantidad maxima de plantas igual a 1" {
+    const sojaTrans = new SojaTransgenica(anioDeObtension = 2015, altura = 1.2)
+    const parcelaIndividual = new Ecologica(
+      ancho = 5,
+      largo = 1,
+      horasDeSolAlDia = 9
+    )
+    assert.that(sojaTrans.leResultaIdeal(parcelaIndividual))
+  }
+}
+
+describe "Tests de Asociacion de Plantas - Ecologicas" {
+  test "En parcela ecologica, planta se asocia bien si la parcela no tiene complicaciones y es ideal para ella" {
+    const parcelaEco = new Ecologica(ancho = 10, largo = 5, horasDeSolAlDia = 6)
+    const menta = new Menta(anioDeObtension = 2020, altura = 1)
+    assert.that(parcelaEco.seAsociaBien(menta))
+  }
+}
+
+describe "Tests de Asociacion de Plantas - Industriales" {
+  test "En parcela industrial, planta se asocia bien si hay como maximo 2 plantas y la planta es fuerte" {
+    const parcelaInd = new Industrial(ancho = 6, largo = 4, horasDeSolAlDia = 6)
+    const quinoaFuerte = new Quinoa(
+      horasDeSolQueTolera = 12,
+      anioDeObtension = 2010,
+      altura = 1.2
+    )
+    assert.that(parcelaInd.seAsociaBien(quinoaFuerte))
+  }
+  
+  test "En parcela industrial, planta no se asocia bien si la planta no es fuerte" {
+    const parcelaInd = new Industrial(ancho = 6, largo = 4, horasDeSolAlDia = 6)
+    const menta = new Menta(anioDeObtension = 2020, altura = 1)
+    assert.notThat(parcelaInd.seAsociaBien(menta))
+  }
+}
+
+describe "Tests del INTA" {
+  test "El promedio de plantas por parcela en el INTA da el valor correcto" {
+    const parcelaA = new Ecologica(ancho = 10, largo = 5, horasDeSolAlDia = 6)
+    const parcelaB = new Industrial(ancho = 6, largo = 4, horasDeSolAlDia = 7)
+    
+    parcelaA.plantarUnaPlanta(new Soja(anioDeObtension = 2010, altura = 0.6))
+    parcelaA.plantarUnaPlanta(new Soja(anioDeObtension = 2011, altura = 0.8))
+    parcelaA.plantarUnaPlanta(new Menta(anioDeObtension = 2020, altura = 0.5))
+    parcelaB.plantarUnaPlanta(new Menta(anioDeObtension = 2022, altura = 0.3))
+    inta.agregarParcela(parcelaA)
+    inta.agregarParcela(parcelaB)
+    assert.equals(2, inta.promedioDePlantasPorParcela())
+  }
+}
