@@ -1,0 +1,80 @@
+import example.*
+
+describe "test del dominio" {
+
+    const estratega1 = new Estrategico(seguidores = 10, creatividad = 1, tecnicaVisual = 1,dominioDigital= 1, seudonimo = "estratega1", tipoDeExhibicionQueConoce = #{experimental})
+    const abierta1 = new Abierta()
+    const consagrado1 = new Consagrado(seguidores = 10, creatividad = 1, tecnicaVisual = 1,dominioDigital= 1, seudonimo = "consagrado11",formatoDeExhibicion = ilustracion)
+    const animacionMot = new AnimacionMotion()
+    const versatil1 = new Versatil(seguidores = 10, creatividad = 1, tecnicaVisual = 1,dominioDigital= 1, seudonimo = "versatil1",formatoDeExhibicion = animacionMot)
+    const versatil2 = new Versatil(seguidores = 12, creatividad = 1, tecnicaVisual = 1,dominioDigital= 1, seudonimo = "versatil2",formatoDeExhibicion = animacionMot)
+    const novato = new Versatil(seguidores = 5, creatividad = 1, tecnicaVisual = 1,dominioDigital= 1, seudonimo = "novato",formatoDeExhibicion = animacionMot)
+    const curada1 = new Curada()
+  test "Registrar un nuevo artista estratégico en una galería (x) que ya conoce solo el tipo experimental. Verificar que x tiene 1 artista registrado." {
+    abierta1.registrarArtista(estratega1)
+    assert.equals(1, abierta1.cantidadArtistasRegistrados())
+  }
+
+  test "Realizar una exhibición de exploración para ese artista estratégico con el tipo ilustración y verificar que ahora conoce 2 tipos de exhibición."{
+    estratega1.aprenderNuevoFormatoExhibicion(ilustracion)
+    assert.equals(2, estratega1.cantidadDeExhibicionQueConoce())
+  }
+
+    test "Registrar un nuevo artista consagrado en la galería x que realice exhibiciones de tipo ilustración. Hacer una exhibición y verificar que actualiza correctamente los seguidores."{
+        abierta1.registrarArtista(consagrado1)
+        abierta1.hacerExhibicionPorArtista(consagrado1,ilustracion,300)
+        assert.equals(14, consagrado1.seguidores())
+
+    }
+
+    test "Realizar una nueva exhibición en una galería (x) con un artista versátil que elija hacer animación del tipo -motion graphics-. Verificar que se actualicen bien los seguidores."{
+        abierta1.registrarArtista(versatil1)
+        abierta1.hacerExhibicionPorArtista(versatil1,animacionMot,500)
+        assert.equals(22, versatil1.seguidores())
+
+    }
+
+    test "Obtener la lista de artistas de una galería abierta que califican para pasar a una galería curada" {
+      ccaa.cambiarSeguidoresMinimos(3)
+      abierta1.registrarArtista(versatil1)
+      abierta1.registrarArtista(consagrado1)
+      abierta1.registrarArtista(estratega1)
+      abierta1.registrarArtista(novato)
+      assert.equals([versatil1,consagrado1,estratega1],abierta1.artistasQueCalificanParaGaleriaCurada())
+    }
+
+
+
+    test "Informar la cantidad total de seguidores de una galería."{
+        abierta1.registrarArtista(estratega1)
+        abierta1.registrarArtista(consagrado1)
+        assert.equals(20, abierta1.cantidadTotalDeSeguidoresDeGaleria())
+    }
+
+
+    test "Devolver el seudónimo del artista que haya obtenido mayor audiencia en una exhibición en esa galería" {
+      abierta1.registrarArtista(versatil1)
+      abierta1.registrarArtista(consagrado1)
+      abierta1.registrarArtista(estratega1)
+      abierta1.registrarArtista(novato)
+      abierta1.hacerExhibicionPorArtista(versatil1,animacionMot,500)
+      abierta1.hacerExhibicionPorArtista(consagrado1,animacionMot,200)
+      abierta1.hacerExhibicionPorArtista(estratega1,animacionMot,700)
+      abierta1.hacerExhibicionPorArtista(novato,animacionMot,50)
+      assert.equals("estratega1",abierta1.artistaConMayorAudiencia())
+    }
+
+  test "Reasignar a los 3 mejores artistas (con más seguidores) desde una galería abierta a una galería curada, si cumplen las condiciones" {
+      ccaa.cambiarSeguidoresMinimos(3)
+      abierta1.registrarArtista(versatil1)
+      abierta1.registrarArtista(versatil2)
+      abierta1.registrarArtista(consagrado1)
+      abierta1.registrarArtista(estratega1)
+      abierta1.registrarArtista(novato)
+      abierta1.reasignarACurada(curada1)
+      assert.equals([versatil2,versatil1,consagrado1],curada1.registroArtistas())
+      assert.equals([estratega1,novato],abierta1.registroArtistas())
+  }
+
+
+}
