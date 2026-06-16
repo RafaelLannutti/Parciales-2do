@@ -1,0 +1,50 @@
+import ciudadFuturista.*
+describe "Tests del sistema de la Ciudad Futurista" {
+    
+    const sensorConMejora = new Sensor(capacidad = 10, durabilidad = 30, tieneMejoras = true)
+    const sensorSinMejora = new Sensor(capacidad = 5, durabilidad = 5, tieneMejoras = false)
+    const vigilanciaAvanzada = new Vigilancia(sensores = [sensorConMejora])
+    
+    const dronSeguridad = new DronDeSeguridad(autonomia = 60, nivelProcesamiento = 60, mision = transporte)
+    const dronComercial = new DronComercial(autonomia = 40, nivelProcesamiento = 20, mision = vigilanciaAvanzada)
+    
+    const zonaGigante = new Zona(tamano = 1000)
+    const zonaPeque = new Zona(tamano = 100)
+    const escuadron = new Escuadron(drones = [])
+
+    test "Calculo de eficiencia operativa en Dron Comercial con Vigilancia" {
+        // autonomia: 40 * 10 = 400.
+        // mision extra: 10 * 2 (por mejora) = 20. Total base = 420.
+        // comercial extra: 420 * 1.10 = 462.
+        assert.equals(462, dronComercial.eficienciaOperativa())
+    }
+
+    test "Dron de Seguridad es avanzado por tipo debido a su procesamiento" {
+        assert.that(dronSeguridad.esAvanzado())
+    }
+
+    test "Fallo al intentar superar la cantidad máxima de drones en el escuadrón" {
+        ciudadFuturista.maximaCantidadDrones(0)
+        assert.throwsExceptionWithMessage("Supera la cantidad máxima definida por la ciudad", {
+            escuadron.agregarDron(dronSeguridad)
+        })
+    }
+
+    test "Escuadron no puede operar una zona por falta de capacidad operativa" {
+        ciudadFuturista.maximaCantidadDrones(10)
+        escuadron.agregarDron(dronSeguridad)
+        // Capacidad escuadrón = 700. Necesita > 1500 (1000 * 1.5) para operar.
+        assert.notThat(escuadron.puedeOperar(zonaGigante))
+    }
+
+    test "Escuadron opera exitosamente, actualiza la zona y reduce autonomia" {
+        ciudadFuturista.maximaCantidadDrones(10)
+        escuadron.agregarDron(dronSeguridad)
+        
+        escuadron.operar(zonaPeque)
+        
+        assert.equals(1, zonaPeque.operacionesRecibidas())
+        // Autonomía inicial 60. Se reduce un 5%: 60 * 0.95 = 57.
+        assert.equals(57, dronSeguridad.autonomia())
+    }
+}
